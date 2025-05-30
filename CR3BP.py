@@ -1,39 +1,58 @@
-#Katherine Korobov
-#Cislunar Initial Orbit Determination Using Adbissible Regions Theory CU SPUR Project
-#Mentor: Queenique Dinh, Marcus Holzinger
-#Date: May 28, 2024
-#This code is a Python script that simulates the motion of a spacecraft in the Circular Restricted Three-Body Problem (CR3BP) using the -- method for numerical integration.
+"""
+Katherine Korobov
+Cislunar Initial Orbit Determination Using Adbissible Regions Theory CU SPUR Project
+Mentors: Queenique Dinh, Marcus Holzinger
+Date: May 28, 2024
+This code is a Python script that simulates the motion of a spacecraft in the 
+Circular Restricted Three-Body Problem (CR3BP) using the - method for numerical integration.
+"""
 
-#imports libraries needed, runge kutta integration?
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.integrate as spi
+# Import useful libraries
+import numpy as np 
+import matplotlib.pyplot as plt 
+import scipy.integrate as spi 
 
-define setConstants():
+# Create functions
+def setConstants():
     mu = 
-    r1 = 
-    r2 =
+    return mu
 
-#set initial conditions
+def readCSV(filename):
+    data = np.genfromtxt(filename, delimiter=',', skip_header=1) # Read CSV file and skip header, generates new row for each line
+    return data
 
-Define initial statevector
+def initialConditions(filename):
+    data = readCSV(filename)
+    x = data[0, 0]  # Initial x position
+    y = data[0, 1]  # Initial y position
+    z = data[0, 2]  # Initial z position
+    x_prime = data[0, 3]  # Initial x velocity
+    y_prime = data[0, 4]  # Initial y velocity
+    z_prime = data[0, 5]  # Initial z velocity
+    return [x, y, z, x_prime, y_prime, z_prime]
 
-define integration time?
 
-integrate 
+integrationMethod
 
 plot
+
+def main():
+    mu = setConstants()
+    state = initialConditions()
+
+    #time of integration
+    t_0 = 0  # Initial time
+    t_f = 1000  # Final time
+
+    t_span = (t_0, t_f)  # Time span for integration
+
+    
 
 
 
 define integrationMethod(state):
     define the integration method to be used, e.g., Runge-Kutta 4th order
 
-
-#set initial conditions and initial condition vector/array
-state = [x, y, z, x_prime, y_prime, z_prime]  # initial state vector
-# Constants for the CR3BP
-setConstants()
 
 #use integration method and EOM to propagate a new state vector 
 
