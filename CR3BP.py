@@ -60,15 +60,12 @@ def main():
     filename = sys.argv[1]  # Get the filename from command line arguments
     state, orbit_id, mu = initialConditions(filename)
 
-    print(f"Orbit ID: {orbit_id}")
-    print(f"Initial State: {state}")
-"""""
     t_0 = 0  # Initial time
     t_f = 1000  # Final time
     t_eval = np.linspace(t_0, t_f, 1000)  # Time points at which to store the solution
 
-    sol = spi.odeint(EOM, state, t_eval)
-"""
+    sol = spi.odeint(EOM, state, t_eval, args=(mu,)) 
+
     #plotting the results
 
 
