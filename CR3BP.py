@@ -17,23 +17,29 @@ import matplotlib.pyplot as plt
 import scipy.integrate as spi 
 import sys
 
+
 def readCSV(filename):
-    data = np.genfromtxt(filename, delimiter=',', skip_header=1) # Read CSV file and skip header, generates new row for each line
+    data = np.genfromtxt(filename, delimiter=',', names=True, dtype=None, encoding='utf-8') # Read CSV file and skip header, generates new row for each line
     return data
 
 def initialConditions(filename):
     data = readCSV(filename)
 
-    orbit_id = data[0, 0]  # ID of Orbit
-    x = data[0, 1]  # Initial x position
-    y = data[0, 2]  # Initial y position
-    z = data[0, 3]  # Initial z position
-    x_prime = data[0, 4]  # Initial x velocity
-    y_prime = data[0, 5]  # Initial y velocity
-    z_prime = data[0, 6]  # Initial z velocity
-    mu = data[0, 12] #Mass ratio of the two primary bodies
+    row = data[0] if data.shape else data  # Get the first row of data
+
+    def toFloat(val):
+            return float(str(val).strip().replace('"', ''))
+
+    orbit_id = toFloat(row['Id_'])  # ID of Orbit
+    x = toFloat(row['x0_LU_'])
+    y = toFloat(row['y0_LU_'])
+    z = toFloat(row['z0_LU_'])
+    x_prime = toFloat(row['vx0_LUTU_'])
+    y_prime = toFloat(row['vy0_LUTU_'])
+    z_prime = toFloat(row['vz0_LUTU_'])
+    mu = toFloat(row['Mass_ratio'])
     
-    return [x, y, z, x_prime, y_prime, z_prime] , orbit_id, mu 
+    return [x, y, z, x_prime, y_prime, z_prime], orbit_id, mu 
 
 def EOM(state, t, mu):
     x, y, z, x_prime, y_prime, z_prime = state
@@ -47,8 +53,8 @@ def EOM(state, t, mu):
     return [x_prime, y_prime, z_prime, x_2prime, y_2prime, z_2prime]
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python CR3BP.py <initial_conditions_file>")
+    if len(sys.argv) < 2:
+        print("python CR3BP.py <initial_conditions_file>")
         return
     
     filename = sys.argv[1]  # Get the filename from command line arguments
@@ -56,8 +62,6 @@ def main():
 
     print(f"Orbit ID: {orbit_id}")
     print(f"Initial State: {state}")
-    print(f"Mass Ratio (mu): {mu}")
-
 """""
     t_0 = 0  # Initial time
     t_f = 1000  # Final time
