@@ -11,7 +11,7 @@ L2 Southern Halo
 L1 Norhern Halo
 """
 
-# Import useful libraries
+# Import libraries
 import numpy as np 
 import matplotlib.pyplot as plt 
 import scipy.integrate as spi 
@@ -19,14 +19,15 @@ import sys
 
 
 def readCSV(filename):
-    data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None, encoding = 'utf-8') # Read CSV file and skip header
+    data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None, encoding = 'utf-8') # Read CSV file
     return data
 
 def initialConditions(filename):
     data = readCSV(filename)
     
     if data.shape == ():
-        data = [data]            
+        data = [data]   
+
     def toFloat(val):
         return float(str(val).strip().replace('"', '')) # Get rid of quotes and convert to float
 
@@ -42,7 +43,7 @@ def initialConditions(filename):
         mu = toFloat(row['Mass_ratio'])
         state_0 = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0]  # Initial state vector
 
-        states.append((state_0, orbit_id, mu))  # Append the state vector and orbit ID to the list
+        states.append((state_0, orbit_id, mu))
     
     return states
 
@@ -55,6 +56,7 @@ def modelEOM(state, t, mu):
     x_ddot = 2 * y_dot + x - ((1 - mu) * (x + mu)) / r1**3 - (mu * (x - 1 + mu)) / r2**3
     y_ddot = -2 * x_dot + y - ((1 - mu) * y) / r1**3 - (mu * y) / r2**3
     z_ddot = -((1 - mu) * z) / r1**3 - (mu * z) / r2**3
+
     state_dot = [x_dot, y_dot, z_dot, x_ddot, y_ddot, z_ddot]
 
     return state_dot
@@ -65,42 +67,27 @@ def plotResults(sol, t_eval, orbit_id):
     y_rot = sol[:, 1]  # y position
     z_rot = sol[:, 2]  # z position
 
-    #Solutions in the inertial frame
-    x_inert = sol[:, 0] * np.cos(t_eval) - sol[:, 1] * np.sin(t_eval)
-    y_inert = sol[:, 0] * np.sin(t_eval) + sol[:, 1] * np.cos(t_eval)
-    z_inert = sol[:, 2]
-
     # Plotting the results
     fig_rot = plt.figure()
     ax = plt.axes(projection='3d')
     ax.plot3D(x_rot, y_rot, z_rot, label='Rotational Frame', color='blue')
-    ax.set_xlabel('X Position (Units)')
-    ax.set_ylabel('Y Position (Units)')
-    ax.set_zlabel('Z Position (Units)')
+    ax.set_xlabel('X Position (LU)')
+    ax.set_ylabel('Y Position (LU)')
+    ax.set_zlabel('Z Position (LU)')
     ax.set_title('CR3BP Orbit in Rotational Frame for Orbit ID: {}'.format(orbit_id))
 
-    fig_inert = plt.figure()
-    ax_inert = plt.axes(projection='3d')
-    ax_inert.plot3D(x_inert, y_inert, z_inert, label='Inertial Frame', color='red')
-    ax_inert.set_xlabel('X Position (Units)')
-    ax_inert.set_ylabel('Y Position (Units)')
-    ax_inert.set_zlabel('Z Position (Units)')
-    ax_inert.set_title('CR3BP Orbit in Inertial Frame for Orbit ID: {}'.format(orbit_id))
-
-    plt.show()
 
 def main():
     if len(sys.argv) < 2:
-        print("python python CR3BP.py <initial_conditions_file>")
+        print("Format: python CR3BP.py <initial_conditions_file>")
         return
     
     filename = sys.argv[1]  # Get the filename from command line arguments
-    
     all_states = initialConditions(filename)
 
     t_0 = 0  # Initial time
     t_f = 10  # Final time
-    t_eval = np.linspace(t_0, t_f, 1000)  # Time points at which to store the solution
+    t_eval = np.linspace(t_0, t_f, 5000)  # Time points at which to store the solution
 
     plots = True  # Set to True to plot the results
 
@@ -108,6 +95,7 @@ def main():
         sol = spi.odeint(modelEOM, state_0, t_eval, args=(mu,))
         if plots == True:
             plotResults(sol, t_eval, orbit_id)
+    plt.show()
 
 if __name__ == "__main__":
     main()
