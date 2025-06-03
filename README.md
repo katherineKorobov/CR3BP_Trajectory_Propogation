@@ -1,1 +1,37 @@
 # CR3BP_Trajectory_Propogation
+Introduction
+------------
+
+This is euler, a collection of Python routines for solving various problems
+in applied mathematics. The goal is to provide a simple Python interface
+that you can use and expand upon in your studies and work. Therefore, no
+claims are made regarding optimality or elegance of the algorithms and
+Python implementation.
+
+euler is free software, distributed under the terms of the GNU General
+Public License <http://www.gnu.org/licenses/gpl.html>.
+
+Contents
+--------
+
+  interpol : Various interpolation techniques
+  linalg   : Topics in linear algebra
+  misc     : Mathematical odds and ends
+  ode      : Numerical schemes for solving systems of ODEs
+  regress  : Functions for regression analysis
+  solver   : Solvers for systems of equations
+  test     : Example programs to demonstrate the library's functions
+
+Prerequisites
+-------------
+
+(1) Python version 2.7 or greater.
+(2) NumPy version 1.12 or greater.
+
+Installation
+------------
+
+The library is written in Python and therefore no installation step
+is needed. After cloning the source repository, just ensure that the
+PYTHONPATH environment variable contains ~/your_base_dir/euler. The
+examples in test/ do this automatically.
