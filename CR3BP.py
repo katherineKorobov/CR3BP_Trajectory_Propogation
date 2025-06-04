@@ -10,13 +10,11 @@ orbits:
 L2 Southern Halo
 L1 Norhern Halo
 """
-
 # Import libraries
 import numpy as np 
 import matplotlib.pyplot as plt 
 import scipy.integrate as spi 
 import sys
-
 
 def readCSV(filename):
     data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None, encoding = 'utf-8') # Read CSV file
@@ -33,17 +31,19 @@ def initialConditions(filename):
 
     states = []
     for row in data:
-        orbit_id = toFloat(row['Id_'])  # ID of Orbit
         x_0 = toFloat(row['x0_LU_'])
         y_0 = toFloat(row['y0_LU_'])
         z_0 = toFloat(row['z0_LU_'])
         x_prime0 = toFloat(row['vx0_LUTU_'])
         y_prime0 = toFloat(row['vy0_LUTU_'])
         z_prime0 = toFloat(row['vz0_LUTU_'])
+        jac_const = toFloat(row['Jacobi_constant_LU2TU2_'])
+        period = toFloat(row['Period_TU_'])
         mu = toFloat(row['Mass_ratio'])
+
         state_0 = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0]  # Initial state vector
 
-        states.append((state_0, orbit_id, mu))
+        states.append((state_0, jac_const, period, mu))
     
     return states
 
@@ -61,20 +61,14 @@ def modelEOM(state, t, mu):
 
     return state_dot
 
-def plotResults(sol, t_eval, orbit_id):
+def plotResults(sol, color, ax):
    #Solutions in the rotational frame
     x_rot = sol[:, 0]  # x position
     y_rot = sol[:, 1]  # y position
     z_rot = sol[:, 2]  # z position
 
     # Plotting the results
-    fig_rot = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.plot3D(x_rot, y_rot, z_rot, label='Rotational Frame', color='blue')
-    ax.set_xlabel('X Position (LU)')
-    ax.set_ylabel('Y Position (LU)')
-    ax.set_zlabel('Z Position (LU)')
-    ax.set_title('CR3BP Orbit in Rotational Frame for Orbit ID: {}'.format(orbit_id))
+    ax.plot3D(x_rot, y_rot, z_rot, color=color)
 
 
 def main():
@@ -85,17 +79,36 @@ def main():
     filename = sys.argv[1]  # Get the filename from command line arguments
     all_states = initialConditions(filename)
 
-    t_0 = 0  # Initial time
-    t_f = 10  # Final time
-    t_eval = np.linspace(t_0, t_f, 5000)  # Time points at which to store the solution
+    # Get all Jacobi constants for color mapping
+    jac_constants = np.array([jac_const for _, jac_const, _, _ in all_states])
+    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    cmap = plt.cm.viridis
 
-    plots = True  # Set to True to plot the results
+    fig_rot = plt.figure()
+    ax = plt.axes(projection='3d')  # Create a 3D axis for plotting
 
-    for state_0, orbit_id, mu in all_states:
+
+    for state_0, jac_const, period, mu in all_states:
+        t_0 = 0  # Initial time
+        t_f = period
+        t_eval = np.linspace(t_0, t_f, 1000)
         sol = spi.odeint(modelEOM, state_0, t_eval, args=(mu,))
-        if plots == True:
-            plotResults(sol, t_eval, orbit_id)
-    plt.show()
+        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        plotResults(sol, color, ax)
+
+    ax.set_xlabel('X Position (LU)')
+    ax.set_ylabel('Y Position (LU)')
+    ax.set_zlabel('Z Position (LU)')
+    ax.set_title('CR3BP ') 
+
+    # Add colorbar
+    sm = plt.cm.ScalarMappable(cmap=cmap)
+    sm.set_clim(jac_min, jac_max)
+    cbar = plt.colorbar(sm, ax=ax, pad=0.1, shrink=0.7)
+    cbar.set_label('Jacobi Constant')
+
+
+    plt.show()  # Show the plot
 
 if __name__ == "__main__":
     main()
