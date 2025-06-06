@@ -5,10 +5,6 @@ Mentors: Queenique Dinh, Marcus Holzinger
 Date: May 28, 2024
 This code is a Python script that simulates the motion of a spacecraft in the 
 Circular Restricted Three-Body Problem (CR3BP) using odeint, a 4th Order Runge-Kutta method for numerical integration.
-
-orbits:
-L2 Southern Halo
-L1 Norhern Halo
 """
 # Import libraries
 import numpy as np 
@@ -99,7 +95,7 @@ def main():
     ax.set_xlabel('X Position (LU)')
     ax.set_ylabel('Y Position (LU)')
     ax.set_zlabel('Z Position (LU)')
-    ax.set_title('CR3BP ') 
+    ax.set_title('Visualization of CR3BP Halo Orbits') 
 
     # Add colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap)
