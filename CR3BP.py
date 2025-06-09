@@ -57,14 +57,58 @@ def modelEOM(state, t, mu):
 
     return state_dot
 
-def plotResults(sol, color, ax):
-   #Solutions in the rotational frame
-    x_rot = sol[:, 0]  # x position
-    y_rot = sol[:, 1]  # y position
-    z_rot = sol[:, 2]  # z position
+def plotOrbits(all_solutions, jac_constants):
+    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    cmap = plt.cm.viridis
 
-    # Plotting the results
-    ax.plot3D(x_rot, y_rot, z_rot, color=color)
+    fig_rot = plt.figure()
+    ax = plt.axes(projection='3d')
+
+    for sol, jac_const in all_solutions:
+        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        x_rot = sol[:, 0]
+        y_rot = sol[:, 1]
+        z_rot = sol[:, 2]
+        ax.plot3D(x_rot, y_rot, z_rot, color=color)
+
+    ax.set_xlabel('X Position (LU)')
+    ax.set_ylabel('Y Position (LU)')
+    ax.set_zlabel('Z Position (LU)')
+    ax.set_title('Visualization of CR3BP Halo Orbits')
+    sm = plt.cm.ScalarMappable(cmap=cmap)
+    sm.set_clim(jac_min, jac_max)
+    cbar = plt.colorbar(sm, ax=ax, pad=0.1, shrink=0.7)
+    cbar.set_label('Jacobi Constant (LU\u00b2/TU\u00b2)')
+    plt.tight_layout()
+
+
+def plotJacobi(all_solutions, jac_constants):
+    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    cmap = plt.cm.viridis
+
+    fig, ax = plt.subplots()
+
+    for sol, jac_const, mu, t_eval in all_solutions:
+        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        x = sol[:, 0]
+        y = sol[:, 1]
+        z = sol[:, 2]
+
+        x_dot = sol[:, 3]
+        y_dot = sol[:, 4]
+        z_dot = sol[:, 5]
+
+        r1 = np.sqrt((x + mu)**2 + y**2 + z**2)
+        r2 = np.sqrt((x - 1 + mu)**2 + y**2 + z**2)
+
+        u_star = 0.5 * (x**2 + y**2) + (1 - mu)/r1 + mu/r2
+        v_2 = x_dot**2 + y_dot**2 + z_dot**2
+        jacobian_const = 2 * u_star - v_2
+
+        ax.plot(t_eval, jacobian_const, color=color)
+    ax.set_xlabel('Time (TU)')
+    ax.set_ylabel('Jacobi Constant')
+    ax.set_title('Time vs. Jacobi Constant for All Orbits')
 
 
 def main():
@@ -72,39 +116,28 @@ def main():
         print("Format: python CR3BP.py <initial_conditions_file>")
         return
     
-    filename = sys.argv[1]  # Get the filename from command line arguments
+    filename = sys.argv[1]
     all_states = initialConditions(filename)
 
-    # Get all Jacobi constants for color mapping
-    jac_constants = np.array([jac_const for _, jac_const, _, _ in all_states])
-    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
-    cmap = plt.cm.viridis
-
-    fig_rot = plt.figure()
-    ax = plt.axes(projection='3d')  # Create a 3D axis for plotting
-
+    #Define 
+    all_solutions = []
+    jac_constants = []
 
     for state_0, jac_const, period, mu in all_states:
-        t_0 = 0  # Initial time
-        t_f = period
-        t_eval = np.linspace(t_0, t_f, 1000)
+        t0 = 0  # Initial time
+        tf = period
+        t_eval = np.linspace(0, tf, 1000)
+
         sol = spi.odeint(modelEOM, state_0, t_eval, args=(mu,))
-        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
-        plotResults(sol, color, ax)
 
-    ax.set_xlabel('X Position (LU)')
-    ax.set_ylabel('Y Position (LU)')
-    ax.set_zlabel('Z Position (LU)')
-    ax.set_title('Visualization of CR3BP Halo Orbits') 
+        all_solutions.append((sol, jac_const, mu, t_eval))
+        jac_constants.append(jac_const)
 
-    # Add colorbar
-    sm = plt.cm.ScalarMappable(cmap=cmap)
-    sm.set_clim(jac_min, jac_max)
-    cbar = plt.colorbar(sm, ax=ax, pad=0.1, shrink=0.7)
-    cbar.set_label('Jacobi Constant')
+    plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], np.array(jac_constants))
+    plotJacobi(all_solutions, np.array(jac_constants))
+    
+    plt.show()
 
-
-    plt.show()  # Show the plot
 
 if __name__ == "__main__":
     main()
