@@ -81,7 +81,6 @@ def plotOrbits(all_solutions, jac_constants):
     cbar.set_label('Jacobi Constant (LU\u00b2/TU\u00b2)')
     plt.tight_layout()
 
-
 def plotJacobi(all_solutions, jac_constants):
     jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
     cmap = plt.cm.viridis
@@ -107,8 +106,58 @@ def plotJacobi(all_solutions, jac_constants):
 
         ax.plot(t_eval, jacobian_const, color=color)
     ax.set_xlabel('Time (TU)')
-    ax.set_ylabel('Jacobi Constant')
+    ax.set_ylabel('Jacobi Constant (LU\u00b2/ TU\u00b2)')
     ax.set_title('Time vs. Jacobi Constant for All Orbits')
+
+def plotSpherical(all_solutions, jac_constants):
+    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    cmap = plt.cm.viridis
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    ax_rho, ax_theta, ax_phi = axes
+
+    for sol, jac_const, mu, t_eval in all_solutions:
+        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        x = sol[:, 0]
+        y = sol[:, 1]
+        z = sol[:, 2]
+
+        x_dot = sol[:, 3]
+        y_dot = sol[:, 4]
+        z_dot = sol[:, 5]
+
+        # Spherical coordinates and their derivatives
+        rho = np.sqrt(x**2 + y**2 + z**2)
+        rho_dot = (x * x_dot + y * y_dot + z * z_dot) / rho
+
+        theta = np.arctan2(y, x)
+        theta_dot = (x * y_dot - y * x_dot) / (x**2 + y**2)
+
+        phi_num = np.sqrt(x**2 + y**2)
+        phi = np.arctan2(phi_num, z)
+        # Avoid division by zero in denominator
+        dphi_den = np.where((phi_num * (x**2 + y**2 + z**2)) == 0, 1e-12, phi_num * (x**2 + y**2 + z**2))
+        dphi_num = x * z * x_dot**2 + (-z) + y * (z * y_dot - y * z_dot)
+        phi_dot = dphi_num / dphi_den
+
+        ax_rho.plot(rho, rho_dot, color=color)
+        ax_theta.plot(theta, theta_dot, color=color)
+        ax_phi.plot(phi, phi_dot, color=color)
+
+    ax_rho.set_xlabel(r'$\rho$')
+    ax_rho.set_ylabel(r'$\dot{\rho}$')
+    ax_rho.set_title(r'$\rho$ vs. $\dot{\rho}$')
+
+    ax_theta.set_xlabel(r'$\theta$')
+    ax_theta.set_ylabel(r'$\dot{\theta}$')
+    ax_theta.set_title(r'$\theta$ vs. $\dot{\theta}$')
+
+    ax_phi.set_xlabel(r'$\phi$')
+    ax_phi.set_ylabel(r'$\dot{\phi}$')
+    ax_phi.set_title(r'$\phi$ vs. $\dot{\phi}$')
+
+    fig.suptitle('Spherical Coordinates Phase Plots')
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 
 def main():
@@ -135,6 +184,7 @@ def main():
 
     plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], np.array(jac_constants))
     plotJacobi(all_solutions, np.array(jac_constants))
+    plotSpherical(all_solutions, np.array(jac_constants))
     
     plt.show()
 
