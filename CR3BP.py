@@ -1,11 +1,12 @@
-"""
+'''
 Katherine Korobov
 Cislunar Initial Orbit Determination Using Adbissible Regions Theory CU SPUR Project
 Mentors: Queenique Dinh, Marcus Holzinger
 Date: May 28, 2024
 This code is a Python script that simulates the motion of a spacecraft in the 
 Circular Restricted Three-Body Problem (CR3BP) using odeint, a 4th Order Runge-Kutta method for numerical integration.
-"""
+'''
+
 # Import libraries
 import numpy as np 
 import matplotlib.pyplot as plt 
@@ -13,7 +14,8 @@ import scipy.integrate as spi
 import sys
 
 def readCSV(filename):
-    data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None, encoding = 'utf-8') # Read CSV file
+    data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None) 
+    #Notes: names = True ->first row of file is column names, dtype = None -> infers data types automatically
     return data
 
 def initialConditions(filename):
@@ -58,7 +60,8 @@ def modelEOM(state, t, mu):
     return state_dot
 
 def plotOrbits(all_solutions, jac_constants):
-    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    jac_min = np.min(jac_constants)
+    jac_max = np.max(jac_constants)
     cmap = plt.cm.viridis
 
     fig_rot = plt.figure()
@@ -82,7 +85,8 @@ def plotOrbits(all_solutions, jac_constants):
     plt.tight_layout()
 
 def plotJacobi(all_solutions, jac_constants):
-    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    jac_min = np.min(jac_constants)
+    jac_max = np.max(jac_constants)
     cmap = plt.cm.viridis
 
     fig, ax = plt.subplots()
@@ -110,14 +114,16 @@ def plotJacobi(all_solutions, jac_constants):
     ax.set_title('Time vs. Jacobi Constant for All Orbits')
 
 def plotSpherical(all_solutions, jac_constants):
-    jac_min, jac_max = np.min(jac_constants), np.max(jac_constants)
+    jac_min = np.min(jac_constants)
+    jac_max = np.max(jac_constants)
     cmap = plt.cm.viridis
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    ax_rho, ax_theta, ax_phi = axes
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+    ax_angular, ax_dRange, ax_dTheta, ax_dPhi = axs.flatten()
 
     for sol, jac_const, mu, t_eval in all_solutions:
-        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        #normalize Jacobi Const for colormap
+        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5) 
         x = sol[:, 0]
         y = sol[:, 1]
         z = sol[:, 2]
@@ -140,25 +146,28 @@ def plotSpherical(all_solutions, jac_constants):
         dphi_num = x * z * x_dot**2 + (-z) + y * (z * y_dot - y * z_dot)
         phi_dot = dphi_num / dphi_den
 
-        ax_rho.plot(rho, rho_dot, color=color)
-        ax_theta.plot(theta, theta_dot, color=color)
-        ax_phi.plot(phi, phi_dot, color=color)
+        ax_angular.plot(theta, phi, color = color)
+        ax_dRange.plot(t_eval, rho_dot, color = color)
+        ax_dTheta.plot(t_eval, theta_dot, color = color)
+        ax_dPhi.plot(t_eval, phi_dot, color = color)
 
-    ax_rho.set_xlabel(r'$\rho$')
-    ax_rho.set_ylabel(r'$\dot{\rho}$')
-    ax_rho.set_title(r'$\rho$ vs. $\dot{\rho}$')
+    ax_angular.set_xlabel('Theta (LU)')
+    ax_angular.set_ylabel('Phi (LU)')
+    ax_angular.set_title('Theta v. Phi')
 
-    ax_theta.set_xlabel(r'$\theta$')
-    ax_theta.set_ylabel(r'$\dot{\theta}$')
-    ax_theta.set_title(r'$\theta$ vs. $\dot{\theta}$')
+    ax_dRange.set_xlabel('Time (TU)')
+    ax_dRange.set_ylabel('Range-Rate (LU/TU)')
+    ax_dRange.set_title('Time v. Range-Rate')
 
-    ax_phi.set_xlabel(r'$\phi$')
-    ax_phi.set_ylabel(r'$\dot{\phi}$')
-    ax_phi.set_title(r'$\phi$ vs. $\dot{\phi}$')
+    ax_dTheta.set_xlabel('Time (TU)')
+    ax_dTheta.set_ylabel('Theta-Rate (rad/TU)')
+    ax_dTheta.set_title('Time v. Theta-Rate')
+
+    ax_dPhi.set_xlabel('Time (TU)')
+    ax_dPhi.set_ylabel('Phi (rad/TU)')
+    ax_dPhi.set_title('Time v. Phi')
 
     fig.suptitle('Spherical Coordinates Phase Plots')
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-
 
 def main():
     if len(sys.argv) < 2:
