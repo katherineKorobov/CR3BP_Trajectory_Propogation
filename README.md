@@ -19,3 +19,7 @@ matplotlib
 To Run
 ----------
 When executing the python script, run in the terminal: python CR3BP.py <initial-contidions-file>.csv
+
+Miscellaneous
+----------
+
