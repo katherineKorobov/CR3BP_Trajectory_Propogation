@@ -1,33 +1,43 @@
-'''
-Katherine Korobov
-Cislunar Initial Orbit Determination Using Adbissible Regions Theory CU SPUR Project
-Mentors: Queenique Dinh, Marcus Holzinger
-Date: May 28, 2024
-This code is a Python script that simulates the motion of a spacecraft in the 
-Circular Restricted Three-Body Problem (CR3BP) using odeint, a 4th Order Runge-Kutta method for numerical integration.
-'''
-
-# Import libraries
 import numpy as np 
 import matplotlib.pyplot as plt 
 import scipy.integrate as spi 
 import sys
 
 def readCSV(filename):
+    '''
+    @brief Reads medium-sized CSV file
+    @param File to read data from
+    @return Nunmpy array labeled data
+
+    Notes: names = True -> first row of file is column names, dtype = None -> infers data types automatically
+    '''
     data = np.genfromtxt(filename, delimiter = ',', names = True, dtype = None) 
-    #Notes: names = True ->first row of file is column names, dtype = None -> infers data types automatically
     return data
 
+def toFloat(val):
+        '''
+        @brief Converts a quoted string (or any value) to a float
+        @args val: A value expected to represent a float, wrapped in quotes
+        @return float: The floating-pointing number after removing quotes and converting
+
+        Note: Could error if the cleaned value cannot be converted to a flaot
+        '''
+        return float(str(val).strip().replace('"', '')) # Get rid of quotes and convert to float
+
 def initialConditions(filename):
+    '''
+    @brief Collects Orbit information, creates a state vector, and builds a vector containing the state, Jacobi constant, orbit period, and mass ratio 
+    @param File to read data from (calls readCSV(filename))
+    @return List of all orbit state information
+    '''
     data = readCSV(filename)
     
+    #Checks if data is scalar and ensures it is iterable
     if data.shape == ():
         data = [data]   
 
-    def toFloat(val):
-        return float(str(val).strip().replace('"', '')) # Get rid of quotes and convert to float
 
-    states = []
+    states = [] #Empty list for all orbital state information
     for row in data:
         x_0 = toFloat(row['x0_LU_'])
         y_0 = toFloat(row['y0_LU_'])
@@ -39,13 +49,23 @@ def initialConditions(filename):
         period = toFloat(row['Period_TU_'])
         mu = toFloat(row['Mass_ratio'])
 
-        state_0 = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0]  # Initial state vector
+        state_0 = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0] #Initial state vector
 
-        states.append((state_0, jac_const, period, mu))
+        states.append((state_0, jac_const, period, mu)) #Alters list by adding orbit
     
     return states
 
 def modelEOM(state, t, mu):
+    '''
+    @brief Defines Equations of Motion for CR3BP and in odeint to integrate orrbit trajectories
+    @param state: the current (soon to be previous) state list
+    @param t: The time (TU) thtat corresponds to state
+    @param mu: The mass ratio between the primary and secondary body
+    @return state_dot: the derivative of the state list
+
+    Note: odeint takes in a derivative state  list, integrates, and outputs the state trajectory
+    Note: t is not used because the EOM are time-independent. However, it is used to satisfy odeint which looks for the time input in the function call
+    '''
     x, y, z, x_dot, y_dot, z_dot = state 
 
     r1 = np.sqrt((x + mu)**2 + y**2 + z**2)  # Distance to primary body
@@ -110,8 +130,8 @@ def plotJacobi(all_solutions, jac_constants):
 
         ax.plot(t_eval, jacobian_const, color=color)
     ax.set_xlabel('Time (TU)')
-    ax.set_ylabel('Jacobi Constant (LU\u00b2/ TU\u00b2)')
-    ax.set_title('Time vs. Jacobi Constant for All Orbits')
+    ax.set_ylabel('Jacobi Constant (LU\u00b2 / TU\u00b2)')
+    ax.set_title('Time v. Jacobi Constant')
 
 def plotSpherical(all_solutions, jac_constants):
     jac_min = np.min(jac_constants)
@@ -196,7 +216,6 @@ def main():
     plotSpherical(all_solutions, np.array(jac_constants))
     
     plt.show()
-
 
 if __name__ == "__main__":
     main()
