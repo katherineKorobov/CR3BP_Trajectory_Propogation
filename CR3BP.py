@@ -138,7 +138,7 @@ def plotSpherical(all_solutions, jac_constants):
     jac_max = np.max(jac_constants)
     cmap = plt.cm.viridis
 
-    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+    fig, axs = plt.subplots(2, 2, figsize=(14, 12))
     ax_angular, ax_dRange, ax_dTheta, ax_dPhi = axs.flatten()
 
     for sol, jac_const, mu, t_eval in all_solutions:
@@ -167,9 +167,9 @@ def plotSpherical(all_solutions, jac_constants):
         phi_dot = dphi_num / dphi_den
 
         ax_angular.plot(theta, phi, color = color)
-        ax_dRange.plot(t_eval, rho_dot, color = color)
-        ax_dTheta.plot(t_eval, theta_dot, color = color)
-        ax_dPhi.plot(t_eval, phi_dot, color = color)
+        ax_dRange.plot(t_eval, rho, color = color)
+        ax_dTheta.plot(t_eval, theta, color = color)
+        ax_dPhi.plot(t_eval, phi, color = color)
 
     ax_angular.set_xlabel('Theta (LU)')
     ax_angular.set_ylabel('Phi (LU)')
