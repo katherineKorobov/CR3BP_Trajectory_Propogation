@@ -31,7 +31,7 @@ def plotOrbits(all_solutions, jac_constants):
     ax.set_xlabel('X Position (LU)')
     ax.set_ylabel('Y Position (LU)')
     ax.set_zlabel('Z Position (LU)')
-    ax.set_title('Visualization of CR3BP Halo Orbits')
+    ax.set_title('Visualization of Orbit')
     sm = plt.cm.ScalarMappable(cmap=cmap)
     sm.set_clim(jac_min, jac_max)
     cbar = plt.colorbar(sm, ax=ax, pad=0.1, shrink=0.7)
