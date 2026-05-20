@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import scipy.integrate as spi 
 import sys
 
+sys.path.append(r'E:\projects\CR3BP_Trajectory_Propogation')
+
 from src.utils.gen_util import readCSV
+from src.utils.gen_util import toFloat
 
 def initialConditions(filename):
     '''
@@ -175,6 +178,7 @@ def main():
         print("Format: python CR3BP.py <initial_conditions_file>")
         return
     
+
     filename = sys.argv[1]
     all_states = initialConditions(filename)
 
