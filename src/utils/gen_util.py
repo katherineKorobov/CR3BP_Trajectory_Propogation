@@ -2,8 +2,8 @@
 File: gen_util.py
 Description: Basic utility functions.
 Author: Katherine Korobov
-Created: 20 June 2026
-Last Modified: 20 June 2026
+Created: 20 May 2026
+Last Modified: 20 May 2026
 '''
 
 import numpy as np

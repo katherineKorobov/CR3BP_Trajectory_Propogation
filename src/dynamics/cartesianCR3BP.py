@@ -1,3 +1,10 @@
+'''
+File: cartesianCR3BP.py
+Description: This file holds different models of the CR3BP.
+Author: Katherine Korobov
+Created: 20 May 2026
+Last Modified: 20 May 2026
+'''
 
 import numpy as np
 
@@ -18,7 +25,7 @@ def modelEOM(state, t, mu):
     r2 = np.sqrt((x - 1 + mu)**2 + y**2 + z**2)  # Distance to secondary body
 
     x_ddot = 2 * y_dot + x - ((1 - mu) * (x + mu)) / r1**3 - (mu * (x - 1 + mu)) / r2**3
-    y_ddot = -2 * x_dot + y - ((1 - mu) * y) / r1**3 - (mu * y) / r2**3
+    y_ddot = (-2 * x_dot) + y - ((1 - mu) * y) / r1**3 - (mu * y) / r2**3
     z_ddot = -((1 - mu) * z) / r1**3 - (mu * z) / r2**3
 
     state_dot = [x_dot, y_dot, z_dot, x_ddot, y_ddot, z_ddot]
