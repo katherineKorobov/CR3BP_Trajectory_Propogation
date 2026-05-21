@@ -11,15 +11,19 @@ import numpy as np
 def modelEOM(state, t, mu):
     '''
     @brief Defines Equations of Motion for CR3BP and in odeint to integrate orrbit trajectories
-    @param state: the current (soon to be previous) state list
+    @param state: The current state
     @param t: The time (TU) thtat corresponds to state
     @param mu: The mass ratio between the primary and secondary body
     @return state_dot: the derivative of the state list
 
     Note: odeint takes in a derivative state  list, integrates, and outputs the state trajectory
     Note: t is not used because the EOM are time-independent. It is used to satisfy odeint which looks for the time input in the function call.
+    Note: CR3BP assumes:
+        1. The masses are point masses
+        2. The primary and secondary masses are much larger than the tertiary mass
+        3. The primary and secondary masses orbit in a circle around their center of mass
     '''
-    x, y, z, x_dot, y_dot, z_dot = state 
+    x, y, z, x_dot, y_dot, z_dot = state # decompose state vector
 
     r1 = np.sqrt((x + mu)**2 + y**2 + z**2)  # Distance to primary body
     r2 = np.sqrt((x - 1 + mu)**2 + y**2 + z**2)  # Distance to secondary body

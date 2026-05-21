@@ -18,11 +18,25 @@ def plot_jacobi_const(all_solutions, jac_constants):
 
     fig, ax = plt.subplots()
 
-    jacobian_const = calculate_jacobi_const(all_solutions)
+    jacobi_const = calculate_jacobi_const(all_solutions) # all jacobi constants for each iteration of orbit (1, len(t_eval)=10000)
+
+    mean_jacobi_const = np.mean(jacobi_const)
+
+    # attemping to smoothen out jacobi constant data so graph shows that it is constant despite small, negligible changes
+    # changes occur due to calculation/rounding errors in code
+    
 
     for sol, jac_const, mu, t_eval in all_solutions:
-        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
-        ax.plot(t_eval, jacobian_const, color=color)
+
+        if (max(jacobi_const) - min(jacobi_const)) < 1e-5:
+            jac_const =  mean_jacobi_const
+    
+        if jac_max > jac_min:
+            color = cmap((jac_const - jac_min) / (jac_max - jac_min)) 
+        else:
+            color = 0.5
+
+        ax.plot(t_eval, jacobi_const, color=color)
 
     ax.set_xlabel('Time (TU)')
     ax.set_ylabel('Jacobi Constant (LU\u00b2 / TU\u00b2)')
