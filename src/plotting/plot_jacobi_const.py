@@ -35,8 +35,8 @@ def plot_jacobi_const(all_solutions, jac_constants):
             color = cmap((jac_const - jac_min) / (jac_max - jac_min)) 
         else:
             color = 0.5
-
-        ax.plot(t_eval, jacobi_const, color=color)
+        jac_const =  np.ones(len(t_eval)) * mean_jacobi_const
+        ax.plot(t_eval, jac_const, color=color)
 
     ax.set_xlabel('Time (TU)')
     ax.set_ylabel('Jacobi Constant (LU\u00b2 / TU\u00b2)')
