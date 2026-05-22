@@ -12,9 +12,13 @@ TODO: verify the calculated jacobi constant with the provied one.
 Dependencies
 -------------
 (1) Python version 2.7 or greater.
+
 (2) NumPy version 1.12 or greater.
+
 (3) sci py
+
 (4) matplotlib
+
 (5) CSV data with a particular format. All data has been pulled from the [NASA JPL Database](https://ssd.jpl.nasa.gov/tools/periodic_orbits.html). 
 
 To Run
