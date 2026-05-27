@@ -3,7 +3,7 @@ File: main.py
 Description: The main function for the project: "CR3BP_Trajectory Propogation".
 Author: Katherine Korobov
 Created: 20 May 2026
-Last Modified: 20 May 2026
+Last Modified: 26 May 2026
 '''
 
 import numpy as np 
@@ -18,8 +18,11 @@ from src.utils.gen_util import toFloat
 from src.plotting.plot_orbits import plotOrbits, plotSpherical
 from src.dynamics.cartesianCR3BP import modelEOM
 from src.plotting.plot_jacobi_const import plot_jacobi_const
+from src.plotting.plot_jacobi_error import plot_jacobi_error
+from src.objects.Measurement import Measurement
+from src.objects.State import State
 
-def initialConditions(filename):
+def buildInitialConditions(filename):
     '''
     @brief Collects Orbit information, creates a state vector, and builds a vector containing the state, Jacobi constant, orbit period, and mass ratio 
     @param File to read data from (calls readCSV(filename))
@@ -44,41 +47,48 @@ def initialConditions(filename):
         period = toFloat(row['Period_TU_'])
         mu = toFloat(row['Mass_ratio'])
 
-        state_0 = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0] #Initial state vector
+        initial_state = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0] #Initial state vector
+        state = State(initial_state, 0, jac_const, period, mu)
+        states.append(state)
 
-        states.append((state_0, jac_const, period, mu)) #Alters list by adding orbit
-    
     return states
 
 def main():
     if len(sys.argv) < 2:
-        print("Format: python CR3BP.py <initial_conditions_file>")
+        print("Format: python main.py <initial_conditions_file>")
         return
     
     filename = sys.argv[1]
-    all_states = initialConditions(filename)
+    all_states = buildInitialConditions(filename) # returns array of State classes for each orbit data provided
 
     #Define 
     all_solutions = []
     jac_constants = []
+    steps = 10000
 
-    for state_0, jac_const, period, mu in all_states:
-        t0 = 0  # Initial time
-        tf = period
-        t_eval = np.linspace(0, tf, 10000)
+    for state in all_states:
+        t_eval = np.linspace(state.init_time, state.period, steps)
 
-        sol = spi.odeint(modelEOM, state_0, t_eval, args=(mu,))
+        sol = spi.odeint(modelEOM, state.init_state_vector, t_eval, args=(state.mu,)) # propogates
 
-        all_solutions.append((sol, jac_const, mu, t_eval))
-        jac_constants.append(jac_const)
+        state.state_vector.vstack(sol)
+        state.time = t_eval
+        
+        #all_solutions.append((sol, state.jacobi_constant, state.mu, t_eval))
+        jac_constants.append(state.jacobi_constant)
 
+    jac_constants = np.array(jac_constants) # Convert to numpy array for ease
 
-    plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], np.array(jac_constants))
+    plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], jac_constants)
     
-    plot_jacobi_const(all_solutions, np.array(jac_constants))
+    #plot_jacobi_const(all_solutions, jac_constants)
 
     #plotSpherical(all_solutions, np.array(jac_constants))
+
+    #plot_jacobi_error(all_states, all_solutions, jac_constants)
     
+    
+
     plt.show()
 
 if __name__ == "__main__":

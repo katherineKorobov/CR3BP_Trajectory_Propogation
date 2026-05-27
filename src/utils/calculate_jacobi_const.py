@@ -11,7 +11,9 @@ import numpy as np
 def calculate_jacobi_const(all_solutions):
     # calculates the jacobi constant of the orbit for points along the orbit
     # jacobi constant is a conserved quantity in CR3BP, so we should see no change in the value for each orbit
-
+    num_cols = np.size(all_solutions, axis=1)
+    jacobian_const = np.zeros(num_cols)
+    
     for sol, jac_const, mu, t_eval in all_solutions:
         x = sol[:, 0]
         y = sol[:, 1]
@@ -26,6 +28,7 @@ def calculate_jacobi_const(all_solutions):
 
         u_star = 0.5 * (x**2 + y**2) + (1 - mu)/r1 + mu/r2
         v_2 = x_dot**2 + y_dot**2 + z_dot**2
-        jacobian_const = 2 * u_star - v_2
+        temp_jacobian_const = 2 * u_star - v_2
+        jacobian_const = np.vstack((jacobian_const, temp_jacobian_const)) # adds the next value of calculated jacobians underneath for no rewriting
 
     return jacobian_const
