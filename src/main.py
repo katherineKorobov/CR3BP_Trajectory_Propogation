@@ -35,7 +35,7 @@ def buildInitialConditions(filename):
         data = [data]   
 
 
-    states = [] #Empty list for all orbital state information
+    data = [] #Empty list for all orbital state information
     for row in data:
         x_0 = toFloat(row['x0_LU_'])
         y_0 = toFloat(row['y0_LU_'])
@@ -47,11 +47,11 @@ def buildInitialConditions(filename):
         period = toFloat(row['Period_TU_'])
         mu = toFloat(row['Mass_ratio'])
 
-        initial_state = [x_0, y_0, z_0, x_prime0, y_prime0, z_prime0] #Initial state vector
-        state = State(initial_state, 0, jac_const, period, mu)
-        states.append(state)
+        initial_state = State(x_0, y_0, z_0, x_prime0, y_prime0, z_prime0) #Initial state vector
+        measurement = Measurement(initial_state, 0, jac_const, period, mu)
+        data.append(measurement)
 
-    return states
+    return data
 
 def main():
     if len(sys.argv) < 2:
@@ -59,33 +59,28 @@ def main():
         return
     
     filename = sys.argv[1]
-    all_states = buildInitialConditions(filename) # returns array of State classes for each orbit data provided
+    all_data = buildInitialConditions(filename) # returns array of State classes for each orbit data provided
 
     #Define 
     all_solutions = []
-    jac_constants = []
-    steps = 10000
+    jac_constants = [] # holds all jacobi constants to plot
+    steps = 10000 # number of steps propagator should do 
 
-    for state in all_states:
-        t_eval = np.linspace(state.init_time, state.period, steps)
+    for measurement in all_data:
+        t_eval = np.linspace(measurement.init_time, measurement.period, steps)
+        measurement.time = t_eval
 
-        sol = spi.odeint(modelEOM, state.init_state_vector, t_eval, args=(state.mu,)) # propogates
+        sol = spi.odeint(modelEOM, measurement.init_state_vector, t_eval, args=(measurement.mu,)) # propogates
 
-        state.state_vector.vstack(sol)
-        state.time = t_eval
+        measurement.state_vector.append(sol)
         
         #all_solutions.append((sol, state.jacobi_constant, state.mu, t_eval))
-        jac_constants.append(state.jacobi_constant)
+        jac_constants.append(measurement.jacobi_constant)
 
     jac_constants = np.array(jac_constants) # Convert to numpy array for ease
 
-    plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], jac_constants)
-    
-    #plot_jacobi_const(all_solutions, jac_constants)
-
-    #plotSpherical(all_solutions, np.array(jac_constants))
-
-    #plot_jacobi_error(all_states, all_solutions, jac_constants)
+    plotOrbits(all_data, jac_constants)
+    #plotOrbits([(sol, jac_const) for sol, jac_const, mu, t_eval in all_solutions], jac_constants)
     
     
 

@@ -6,8 +6,6 @@ Created: 20 May 2026
 Last Modified: 26 May 2026
 '''
 
-import numpy as np
-
 class State:
 
     # holds position and velocity of an object

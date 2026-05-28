@@ -3,13 +3,13 @@ File: .py
 Description: The main function for the project: "CR3BP_Trajectory Propogation".
 Author: Katherine Korobov
 Created: 20 JuMayne 2026
-Last Modified: 20 May 2026
+Last Modified: 27 May 2026
 '''
 
 import numpy as np 
 import matplotlib.pyplot as plt  
 
-def plotOrbits(all_solutions, jac_constants):
+def plotOrbits(all_data, jac_constants):
     jac_min = np.min(jac_constants)
     jac_max = np.max(jac_constants)
     cmap = plt.cm.viridis
@@ -17,11 +17,11 @@ def plotOrbits(all_solutions, jac_constants):
     fig_rot = plt.figure()
     ax = plt.axes(projection='3d')
 
-    for sol, jac_const in all_solutions:
-        color = cmap((jac_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
-        x_rot = sol[:, 0]
-        y_rot = sol[:, 1]
-        z_rot = sol[:, 2]
+    for measurement in all_data:
+        color = cmap((measurement.jacobi_const - jac_min) / (jac_max - jac_min) if jac_max > jac_min else 0.5)
+        x_rot = measurement.state_vector.x
+        y_rot = measurement.state_vector.y
+        z_rot = measurement.state_vector.z
         
         if max(z_rot) < 1e-10:
             z_rot = 0
