@@ -27,13 +27,13 @@ def modelEOM(state, t, mu):
     '''
 
     # decompose state vector
-    x = state.x
-    y = state.y
-    z = state.z
+    x = state[0]
+    y = state[1]
+    z = state[2]
 
-    x_dot = state.dxdt
-    y_dot = state.dydt
-    z_dot = state.dzdt
+    x_dot = state[3]
+    y_dot = state[4]
+    z_dot = state[5]
 
     r1 = np.sqrt((x + mu)**2 + y**2 + z**2)  # Distance to primary body
     r2 = np.sqrt((x - 1 + mu)**2 + y**2 + z**2)  # Distance to secondary body
@@ -42,6 +42,6 @@ def modelEOM(state, t, mu):
     y_ddot = (-2 * x_dot) + y - ((1 - mu) * y) / r1**3 - (mu * y) / r2**3
     z_ddot = -((1 - mu) * z) / r1**3 - (mu * z) / r2**3
 
-    state_dot = State(x_dot, y_dot, z_dot, x_ddot, y_ddot, z_ddot)
+    state_dot = x_dot, y_dot, z_dot, x_ddot, y_ddot, z_ddot
 
     return state_dot

@@ -35,7 +35,7 @@ def buildInitialConditions(filename):
         data = [data]   
 
 
-    data = [] #Empty list for all orbital state information
+    orbital_data = [] #Empty list for all orbital state information
     for row in data:
         x_0 = toFloat(row['x0_LU_'])
         y_0 = toFloat(row['y0_LU_'])
@@ -49,9 +49,9 @@ def buildInitialConditions(filename):
 
         initial_state = State(x_0, y_0, z_0, x_prime0, y_prime0, z_prime0) #Initial state vector
         measurement = Measurement(initial_state, 0, jac_const, period, mu)
-        data.append(measurement)
+        orbital_data.append(measurement)
 
-    return data
+    return orbital_data
 
 def main():
     if len(sys.argv) < 2:
@@ -70,7 +70,8 @@ def main():
         t_eval = np.linspace(measurement.init_time, measurement.period, steps)
         measurement.time = t_eval
 
-        sol = spi.odeint(modelEOM, measurement.init_state_vector, t_eval, args=(measurement.mu,)) # propogates
+        #TODO the odeint has specific input and outputs but I want classes so I can either create my own propagator or decompose the classes into the correct inputs
+        sol = spi.odeint(modelEOM, measurement.init_state_vector.full_state, t_eval, args=(measurement.mu,)) # propogates
 
         measurement.state_vector.append(sol)
         
